@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Two Masses Collide After a Quarter Pipe</title>
+<style>
+:root{--bg:#f8fafc;--card:#fff;--text:#0f172a;--muted:#64748b;--acc:#0284c7;--accl:#e0f2fe;--bd:#e2e8f0;--stat:#f1f5f9;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--acc:#38bdf8;--accl:#0c4a6e;--bd:#334155;--stat:#0f172a}}
+:root[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--acc:#38bdf8;--accl:#0c4a6e;--bd:#334155;--stat:#0f172a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:'Segoe UI',Tahoma,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+h1{margin:0 0 6px;font-size:1.5rem;text-align:center;color:var(--acc)}
+.sub{font-size:.95rem;color:var(--muted);margin-bottom:24px;text-align:center}
+.main{display:flex;flex-wrap:wrap;gap:24px;max-width:1150px;width:100%;justify-content:center}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:20px;box-shadow:0 10px 25px -5px rgba(0,0,0,.08)}
+.cv{flex:1;min-width:300px;display:flex;flex-direction:column;align-items:center}
+canvas{background:#fff;border-radius:12px;border:1px solid var(--bd);max-width:100%;height:auto}
+.tip{margin-top:14px;font-size:.85rem;color:var(--muted);text-align:center}
+.ctl{width:340px;max-width:100%;display:flex;flex-direction:column;gap:14px}
+.hd{font-size:1.1rem;font-weight:700;border-bottom:1px solid var(--bd);padding-bottom:10px}
+.g{display:flex;flex-direction:column;gap:6px}
+.g label{font-size:.85rem;font-weight:600;display:flex;justify-content:space-between}
+.badge{background:var(--accl);color:var(--acc);padding:2px 8px;border-radius:6px;font-size:.8rem;font-weight:700}
+input[type=range]{width:100%;accent-color:var(--acc);cursor:pointer}
+.btns{display:flex;gap:10px}
+button{flex:1;padding:10px;border:0;border-radius:8px;font-weight:600;cursor:pointer;color:#fff}
+#bs{background:#10b981}#bp{background:#f59e0b}#br{background:#ef4444}
+button:hover{filter:brightness(.92)}
+.stats{background:var(--stat);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:.85rem;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;justify-content:space-between}
+.row b{font-family:monospace;font-size:.9rem}
+</style>
+</head>
+<body>
+<h1>🛷 Two Masses Collide After a Quarter Pipe</h1>
+<div class="sub">จำลองมวลไถลลงรางโค้ง ชนกัน และอัดสปริง</div>
+<div class="main">
+ <div class="card cv">
+  <canvas id="cv" width="720" height="360"></canvas>
+  <div class="tip">💡 ปรับค่าพารามิเตอร์ทางขวา แล้วกด "เริ่มใหม่" เพื่อดูผลทันที</div>
+ </div>
+ <div class="card ctl">
+  <div class="hd">🎚️ ปรับแต่งค่าพารามิเตอร์</div>
+  <div class="g"><label>มวลก้อนที่ 1 (m₁) <span class="badge" id="v-m1"></span></label><input type="range" id="m1" min="0.5" max="10" step="0.1" value="2"></div>
+  <div class="g"><label>มวลก้อนที่ 2 (m₂) <span class="badge" id="v-m2"></span></label><input type="range" id="m2" min="0.5" max="10" step="0.1" value="3"></div>
+  <div class="g"><label>ความสูงเริ่มต้น (h) <span class="badge" id="v-h"></span></label><input type="range" id="h" min="0.5" max="2.5" step="0.1" value="2"></div>
+  <div class="g"><label>สัมประสิทธิ์ความเสียดทาน (μ) <span class="badge" id="v-mu"></span></label><input type="range" id="mu" min="0" max="0.5" step="0.01" value="0.1"></div>
+  <div class="g"><label>สัมประสิทธิ์การสะท้อน (e) <span class="badge" id="v-e"></span></label><input type="range" id="e" min="0" max="1" step="0.05" value="0.8"></div>
+  <div class="g"><label>ค่าคงตัวสปริง (k) <span class="badge" id="v-k"></span></label><input type="range" id="k" min="50" max="800" step="10" value="200"></div>
+  <div class="btns"><button id="bs">▶ เล่น</button><button id="bp">⏸ พัก</button><button id="br">↻ เริ่มใหม่</button></div>
+  <div class="stats">
+   <div class="row"><span>สถานะ:</span><b id="s-ph" style="color:var(--acc)">พร้อม</b></div>
+   <div class="row"><span>ความเร็วมวล 1 (v₁):</span><b id="s-v1">0.00 m/s</b></div>
+   <div class="row"><span>ความเร็วมวล 2 (v₂):</span><b id="s-v2">0.00 m/s</b></div>
+   <div class="row"><span>การหดตัวสปริง (x):</span><b id="s-x">0.00 m</b></div>
+   <div class="row"><span>หดสูงสุด:</span><b id="s-xm">0.00 m</b></div>
+  </div>
+ </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const IN={m1:$('m1'),m2:$('m2'),h:$('h'),mu:$('mu'),e:$('e'),k:$('k')};
+const scale=50,g=9.81,R=2.5,trackEndX=3,springRestX=11.5,springLength=2,size=0.5;
+const plateX=springRestX-springLength, maxComp=springLength-0.15;
+const PH={READY:'พร้อม',ON_PIPE:'กำลังไถลลงราง',ON_FLAT:'เคลื่อนที่บนพื้นราบ',AFTER:'ชน / อัดสปริง',FINISHED:'สิ้นสุดการจำลอง'};
+let m1,m2,h0,mu,e,k,theta,w,x1,v1,x2,v2,comp,maxC,phase='READY',running=false,raf=null,last=0;
+
+function readInputs(){
+  m1=+IN.m1.value;m2=+IN.m2.value;h0=+IN.h.value;mu=+IN.mu.value;e=+IN.e.value;k=+IN.k.value;
+  $('v-m1').textContent=m1.toFixed(1)+' kg';$('v-m2').textContent=m2.toFixed(1)+' kg';
+  $('v-h').textContent=h0.toFixed(1)+' m';$('v-mu').textContent=mu.toFixed(2);
+  $('v-e').textContent=e.toFixed(2);$('v-k').textContent=k.toFixed(0)+' N/m';
+}
+function init(){
+  readInputs();
+  theta=Math.acos(Math.max(0,1-Math.min(h0,R)/R));w=0;
+  x1=trackEndX-R*Math.sin(theta);v1=0;x2=6.2;v2=0;comp=0;maxC=0;phase='READY';
+  stats();draw();
+}
+// ลดความเร็วเข้าหาศูนย์ด้วยแรงเสียดทาน (ไม่ข้ามศูนย์)
+function fric(v,dt){const d=mu*g*dt;return Math.abs(v)<=d?0:v-Math.sign(v)*d}
+function collide(){
+  const u1=v1,u2=v2,M=m1+m2;
+  v1=((m1-e*m2)*u1+(1+e)*m2*u2)/M;
+  v2=((m2-e*m1)*u2+(1+e)*m1*u1)/M;
+}
+function step(dt){
+  if(phase==='READY')phase='ON_PIPE';
+  if(phase==='ON_PIPE'){
+    // แรงตั้งฉากรวมแรงเข้าศูนย์กลาง (R·ω²) เพื่อให้แรงเสียดทานถูกต้อง
+    const at=g*Math.sin(theta)-mu*(g*Math.cos(theta)+R*w*w);
+    w=Math.max(0,w+at/R*dt);
+    theta-=w*dt;
+    if(theta<=0){theta=0;x1=trackEndX;v1=w*R;phase='ON_FLAT'}
+    else{x1=trackEndX-R*Math.sin(theta);v1=w*R;if(w===0&&at<=0)phase='FINISHED'}
+    return;
+  }
+  if(phase==='ON_FLAT'){
+    v1=fric(v1,dt);x1+=v1*dt;
+    if(x1+size>=x2){x1=x2-size;collide();phase='AFTER'}
+    else if(v1===0)phase='FINISHED'; // หยุดก่อนถึงมวล 2
+    return;
+  }
+  if(phase==='AFTER'){
+    // ---- มวล 2 + สปริง ----
+    comp=Math.max(0,x2+size-plateX);
+    const Fs=-k*comp;
+    const held=comp>0&&Math.abs(v2)<0.02&&Math.abs(Fs)<=mu*m2*g; // แรงเสียดทานสถิตยึดไว้
+    if(held)v2=0;
+    else{v2+=(Fs/m2)*dt;v2=fric(v2,dt)}
+    x2+=v2*dt;
+    comp=Math.max(0,x2+size-plateX);
+    if(comp>maxComp){x2=plateX+maxComp-size;comp=maxComp;if(v2>0)v2=-e*v2} // สปริงยุบสุด
+    if(comp>maxC)maxC=comp;
+    // ---- มวล 1 ----
+    v1=fric(v1,dt);x1+=v1*dt;
+    if(x1<trackEndX){x1=trackEndX;v1=0}
+    if(x1+size>x2){x1=x2-size;if(v1>v2)collide()}
+    const Fn=k*comp;
+    if(Math.abs(v1)<0.005&&Math.abs(v2)<0.005&&(comp===0||Fn<=mu*m2*g)){v1=0;v2=0;phase='FINISHED'}
+  }
+}
+function stats(){
+  $('s-ph').textContent=PH[phase];
+  $('s-v1').textContent=v1.toFixed(2)+' m/s';$('s-v2').textContent=v2.toFixed(2)+' m/s';
+  $('s-x').textContent=comp.toFixed(2)+' m';$('s-xm').textContent=maxC.toFixed(2)+' m';
+}
+function update(t){
+  if(!running)return;
+  let dt=(t-last)/1000;if(dt>0.05)dt=0.05;last=t;
+  const n=20;
+  for(let i=0;i<n&&phase!=='FINISHED';i++)step(dt/n);
+  stats();draw();
+  if(phase==='FINISHED'){running=false;return}
+  raf=requestAnimationFrame(update);
+}
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const ox=40,oy=290,X=m=>ox+m*scale,Y=m=>oy-m*scale;
+  ctx.strokeStyle='#f1f5f9';ctx.lineWidth=1;
+  for(let x=0;x<cv.width;x+=25){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke()}
+  ctx.strokeStyle='#94a3b8';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(13.5),Y(0));ctx.stroke();
+  ctx.strokeStyle='#0284c7';ctx.lineWidth=5;ctx.beginPath();
+  for(let a=Math.PI/2;a>=0;a-=0.02){
+    const cx=X(trackEndX-R*Math.sin(a)),cy=Y(R-R*Math.cos(a));
+    a===Math.PI/2?ctx.moveTo(cx,cy):ctx.lineTo(cx,cy);
+  }
+  ctx.stroke();
+  // ผนัง + สปริง
+  ctx.fillStyle='#64748b';ctx.fillRect(X(springRestX),Y(1.8),16,90);
+  const wallX=X(springRestX),sy=Y(0.25);
+  // แก้บั๊ก: ปลายซ้ายของสปริงต้องเป็น max (ถูกมวลดันเข้ามา) ไม่ใช่ min
+  const leftX=Math.max(X(plateX),X(x2+size));
+  ctx.strokeStyle='#d97706';ctx.lineWidth=3;ctx.beginPath();
+  const coils=10,sp=(wallX-leftX)/(coils*2);
+  ctx.moveTo(leftX,sy);
+  for(let i=0;i<=coils*2;i++){
+    const y=(i===0||i===coils*2)?sy:sy+(i%2===0?-10:10);
+    ctx.lineTo(leftX+i*sp,y);
+  }
+  ctx.stroke();
+  // มวล 1
+  const s=size*scale,y1=phase==='ON_PIPE'||phase==='READY'?R-R*Math.cos(theta):0;
+  const c1x=X(x1),c1y=Y(y1+size);
+  ctx.fillStyle='#10b981';ctx.beginPath();ctx.roundRect(c1x,c1y,s,s,8);ctx.fill();
+  ctx.strokeStyle='#047857';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.textAlign='center';
+  ctx.fillText('m₁ ('+m1+'kg)',c1x+s/2,c1y+s/2+4);
+  // มวล 2
+  const c2x=X(x2),c2y=Y(size);
+  ctx.fillStyle='#0284c7';ctx.beginPath();ctx.roundRect(c2x,c2y,s,s,8);ctx.fill();
+  ctx.strokeStyle='#0369a1';ctx.stroke();
+  ctx.fillStyle='#fff';ctx.fillText('m₂ ('+m2+'kg)',c2x+s/2,c2y+s/2+4);
+}
+$('bs').onclick=()=>{
+  if(phase==='FINISHED')init();
+  if(!running){running=true;last=performance.now();raf=requestAnimationFrame(update)}
+};
+$('bp').onclick=()=>{running=false;if(raf)cancelAnimationFrame(raf)};
+$('br').onclick=()=>{running=false;if(raf)cancelAnimationFrame(raf);init()};
+Object.values(IN).forEach(i=>i.addEventListener('input',()=>{readInputs();if(!running)init()}));
+init();
+</script>
+</body>
+</html>
